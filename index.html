@@ -1,0 +1,553 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Chemistry Apple Game - 화학 결합 퍼즐</title>
+  <link rel="stylesheet" href="style.css">
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+</head>
+<body>
+
+<!-- ═══════════════════════════════════════════════════════
+     PHASE 1: 랜딩 페이지
+     ═══════════════════════════════════════════════════════ -->
+<div id="phaseLanding" class="phase">
+  <div class="landing-frame">
+    <div class="landing-inner">
+      <div class="landing-header">
+        <span class="landing-subtitle">화학 결합 퍼즐</span>
+        <h1 class="landing-title">Chemistry Apple Game</h1>
+      </div>
+
+      <div class="landing-content">
+        <div class="landing-play-area">
+          <div class="big-element-ball" onclick="startGame()">
+            <div class="ball-inner">
+              <span class="ball-leaf">&#x1F343;</span>
+              <span class="ball-text">Play</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="landing-elements-preview">
+          <div class="preview-row" id="previewElements"></div>
+        </div>
+
+        <div class="landing-rules">
+          <div class="rule-card">
+            <div class="rule-title">게임 규칙</div>
+            <ul class="rule-list">
+              <li>격자 위 원소를 <b>직사각형</b>으로 드래그하여 선택</li>
+              <li><b>옥텟 규칙</b>을 만족하는 화합물을 만들면 클리어!</li>
+              <li><b class="covalent-text">공유 결합</b>으로 화합물 완성!</li>
+              <li>제한시간: <b>2분</b></li>
+            </ul>
+          </div>
+
+          <div class="rule-card">
+            <div class="rule-title">예시 화합물</div>
+            <div class="example-compounds">
+              <span class="example-tag">H₂ 수소</span>
+              <span class="example-tag">H₂O 물</span>
+              <span class="example-tag">CO₂ 이산화탄소</span>
+              <span class="example-tag">NH₃ 암모니아</span>
+              <span class="example-tag">CH₄ 메테인</span>
+              <span class="example-tag">HCl 염화수소</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="landing-buttons">
+        <button class="btn-landing btn-play" onclick="startGame()">게임 시작</button>
+        <button class="btn-landing btn-ranking" onclick="showPhase('ranking')">랭킹 보기</button>
+      </div>
+
+      <div class="landing-footer">
+        <span>sci_eum</span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════
+     PHASE 2: 게임 플레이
+     ═══════════════════════════════════════════════════════ -->
+<div id="phaseGame" class="phase" style="display:none">
+  <div class="game-container">
+    <div class="game-top-bar">
+      <div class="title-area">
+        <h1>Chemistry Apple Game</h1>
+        <span class="mode-badge" id="modeBadge">공유 결합</span>
+      </div>
+      <div class="stats-row">
+        <div class="stat">
+          <div class="stat-label">점수</div>
+          <div class="stat-value score" id="scoreValue">0</div>
+        </div>
+        <div class="stat">
+          <div class="stat-label">콤보</div>
+          <div class="stat-value combo" id="comboValue">-</div>
+        </div>
+        <div class="stat">
+          <div class="stat-label">시간</div>
+          <div class="stat-value timer" id="timerValue">2:00</div>
+        </div>
+        <div class="stat">
+          <div class="stat-label">발견</div>
+          <div class="stat-value" id="foundCount">0</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="game-board-wrapper">
+      <canvas id="gameCanvas"></canvas>
+    </div>
+
+    <div class="hint-bar">
+      <span id="hintText">인접한 원소를 드래그하여 화합물을 만드세요!</span>
+    </div>
+
+    <div class="bottom-panels">
+      <div class="panel-section compounds-panel">
+        <div class="panel-title">발견한 화합물</div>
+        <div id="compoundList" class="compound-list">
+          <div class="empty-text">아직 발견한 화합물이 없습니다</div>
+        </div>
+      </div>
+      <div class="panel-section elements-panel">
+        <div class="panel-title">등장 원소</div>
+        <div class="element-grid" id="elementGrid"></div>
+        <div class="help-mini">
+          <b>이온 결합</b>: 금속 + 비금속<br>
+          <b>공유 결합</b>: 비금속 + 비금속<br>
+          직사각형으로 <b>드래그</b>하여 선택!
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════
+     PHASE 3: 결과 + 랭킹 등록
+     ═══════════════════════════════════════════════════════ -->
+<div id="phaseResult" class="phase" style="display:none">
+  <div class="result-container">
+    <div class="result-box">
+      <h2 id="resultTitle">GAME OVER</h2>
+      <div class="result-stats">
+        <div class="result-stat">
+          <span class="result-stat-label">최종 점수</span>
+          <span class="result-stat-value" id="resultScore">0</span>
+        </div>
+        <div class="result-stat">
+          <span class="result-stat-label">발견한 화합물</span>
+          <span class="result-stat-value" id="resultCompounds">0</span><span class="result-stat-unit">개</span>
+        </div>
+      </div>
+
+      <!-- 기록 갱신 결과 메시지 -->
+      <div id="submitResultMsg" class="submit-result-msg" style="display:none"></div>
+
+      <!-- 로그인된 상태: 바로 점수 제출 -->
+      <div id="loggedInSubmit" style="display:none">
+        <div class="logged-in-info">
+          <span id="loggedInNickname"></span>으로 로그인됨
+          <button class="btn-text" onclick="logoutAndRefreshResult()">로그아웃</button>
+        </div>
+        <div id="submitError" class="submit-error"></div>
+        <div class="form-buttons">
+          <button class="btn btn-skip" onclick="showPhase('ranking')">건너뛰기</button>
+          <button class="btn btn-submit" id="submitBtn" onclick="handleSubmitScore()">기록 등록</button>
+        </div>
+      </div>
+
+      <!-- 비로그인 상태: 회원가입 / 로그인 선택 -->
+      <div id="authSection" style="display:none">
+        <div class="auth-tabs">
+          <button class="auth-tab active" id="tabLogin" onclick="switchAuthTab('login')">로그인</button>
+          <button class="auth-tab" id="tabRegister" onclick="switchAuthTab('register')">회원가입</button>
+        </div>
+
+        <!-- 로그인 폼 -->
+        <div id="loginForm" class="submit-form">
+          <div class="form-group">
+            <label>닉네임</label>
+            <input type="text" id="loginNickname" maxlength="20" placeholder="닉네임 입력">
+          </div>
+          <div class="form-group">
+            <label>식별번호 (6자리)</label>
+            <input type="password" id="loginPin" maxlength="6" placeholder="6자리 숫자" inputmode="numeric">
+          </div>
+          <div id="loginError" class="submit-error"></div>
+          <div class="form-buttons">
+            <button class="btn btn-skip" onclick="showPhase('ranking')">건너뛰기</button>
+            <button class="btn btn-submit" id="loginBtn" onclick="handleLogin()">로그인</button>
+          </div>
+        </div>
+
+        <!-- 회원가입 폼 -->
+        <div id="registerForm" class="submit-form" style="display:none">
+          <div class="form-group">
+            <label>닉네임</label>
+            <input type="text" id="regNickname" maxlength="20" placeholder="닉네임 입력 (최대 20자)">
+            <div id="nicknameCheck" class="field-hint"></div>
+          </div>
+          <div class="form-group">
+            <label>식별번호 (6자리 숫자)</label>
+            <input type="password" id="regPin" maxlength="6" placeholder="기록 갱신 시 본인 확인용" inputmode="numeric">
+          </div>
+          <div class="form-group">
+            <label>식별번호 확인</label>
+            <input type="password" id="regPinConfirm" maxlength="6" placeholder="식별번호 다시 입력" inputmode="numeric">
+          </div>
+          <div class="form-group">
+            <label>학교</label>
+            <div class="school-selects">
+              <select id="regionSelect"><option value="">시/도 선택</option></select>
+              <select id="districtSelect" disabled><option value="">시/군/구 선택</option></select>
+              <select id="schoolSelect" disabled><option value="">학교 선택</option></select>
+            </div>
+          </div>
+          <div id="registerError" class="submit-error"></div>
+          <div class="form-buttons">
+            <button class="btn btn-skip" onclick="showPhase('ranking')">건너뛰기</button>
+            <button class="btn btn-submit" id="registerBtn" onclick="handleRegister()">가입 + 기록 등록</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════
+     PHASE 4: 랭킹 보드
+     ═══════════════════════════════════════════════════════ -->
+<div id="phaseRanking" class="phase" style="display:none">
+  <div class="ranking-container">
+    <div class="ranking-header">
+      <h2>랭킹 보드</h2>
+      <button class="btn btn-back" onclick="showPhase('landing')">돌아가기</button>
+    </div>
+    <div id="rankingList" class="ranking-list">
+      <div class="empty-text">랭킹을 불러오는 중...</div>
+    </div>
+    <div class="ranking-footer">
+      <button class="btn-landing btn-play" onclick="startGame()">다시 도전!</button>
+    </div>
+  </div>
+</div>
+
+<!-- 게임오버 오버레이 (게임 내 fallback, 보통은 phaseResult 사용) -->
+<div class="game-over-overlay" id="gameOverOverlay">
+  <div class="game-over-box">
+    <h2>GAME OVER</h2>
+    <div class="final-stat">최종 점수: <span id="finalScore">0</span></div>
+    <div class="final-stat">발견한 화합물: <span id="finalCompounds">0</span>개</div>
+    <button class="btn-retry" onclick="restartGame()">다시 도전!</button>
+  </div>
+</div>
+
+<!-- 도움말 모달 -->
+<div class="modal-overlay" id="helpModal">
+  <div class="modal-box">
+    <h2>Chemistry Apple Game</h2>
+    <p><b>게임 목표:</b> 격자 위의 원소들을 연결하여 화합물을 만드세요!</p>
+    <h3>조작법</h3>
+    <ul>
+      <li>원소를 <b>클릭 후 드래그</b>하면 직사각형 영역 선택</li>
+      <li>손을 떼면 자동으로 화합물 검증</li>
+      <li>유효한 화합물이면 사라지고 점수 획득!</li>
+    </ul>
+    <h3>결합 유형</h3>
+    <ul>
+      <li><b style="color:#d4a5ff">이온 결합</b>: 금속 + 비금속 → 1.5배 보너스</li>
+      <li><b style="color:#7dffb3">공유 결합</b>: 비금속 + 비금속</li>
+    </ul>
+    <button class="modal-close" onclick="closeHelp()">닫기</button>
+  </div>
+</div>
+
+<script src="config.js"></script>
+<script src="chemistry.js"></script>
+<script src="game.js"></script>
+<script src="ranking.js"></script>
+<script>
+  // ── Phase 관리 ──
+  let currentPhase = 'landing';
+  let lastGameResult = null;
+
+  function showPhase(phase) {
+    document.querySelectorAll('.phase').forEach(el => el.style.display = 'none');
+    document.getElementById('phase' + phase.charAt(0).toUpperCase() + phase.slice(1)).style.display = '';
+    currentPhase = phase;
+
+    if (phase === 'ranking') {
+      renderRankingBoard();
+    }
+    if (phase === 'result') {
+      refreshResultUI();
+    }
+  }
+
+  // ── 결과 화면 UI 갱신 ──
+  function refreshResultUI() {
+    const loggedInEl = document.getElementById('loggedInSubmit');
+    const authEl = document.getElementById('authSection');
+    const msgEl = document.getElementById('submitResultMsg');
+    msgEl.style.display = 'none';
+
+    if (rankingUser) {
+      // 로그인 상태
+      loggedInEl.style.display = '';
+      authEl.style.display = 'none';
+      document.getElementById('loggedInNickname').textContent = rankingUser.nickname;
+      document.getElementById('submitError').textContent = '';
+      document.getElementById('submitBtn').disabled = false;
+      document.getElementById('submitBtn').textContent = '기록 등록';
+    } else {
+      // 비로그인 상태
+      loggedInEl.style.display = 'none';
+      authEl.style.display = '';
+      switchAuthTab('login');
+      initSchoolSearch();
+    }
+  }
+
+  // ── 인증 탭 전환 ──
+  function switchAuthTab(tab) {
+    document.getElementById('tabLogin').classList.toggle('active', tab === 'login');
+    document.getElementById('tabRegister').classList.toggle('active', tab === 'register');
+    document.getElementById('loginForm').style.display = tab === 'login' ? '' : 'none';
+    document.getElementById('registerForm').style.display = tab === 'register' ? '' : 'none';
+  }
+
+  // ── 로그아웃 ──
+  function logoutAndRefreshResult() {
+    logoutUser();
+    refreshResultUI();
+  }
+
+  // ── 게임 시작 ──
+  function startGame() {
+    showPhase('game');
+
+    // 게임 종료 콜백 설정
+    onGameEnd = (result) => {
+      lastGameResult = result;
+      document.getElementById('resultTitle').textContent = result.title;
+      document.getElementById('resultScore').textContent = result.score;
+      document.getElementById('resultCompounds').textContent = result.compoundsFound;
+      showPhase('result');
+    };
+
+    // 캔버스 초기화 (첫 실행이면 initGame, 아니면 resetGame)
+    if (!canvas) {
+      initGame();
+    } else {
+      resetGame();
+    }
+  }
+
+  // ── 로그인 ──
+  async function handleLogin() {
+    const nickname = document.getElementById('loginNickname').value.trim();
+    const pin = document.getElementById('loginPin').value;
+    const errorEl = document.getElementById('loginError');
+    const btn = document.getElementById('loginBtn');
+
+    if (!nickname) { errorEl.textContent = '닉네임을 입력하세요'; return; }
+    if (!pin || pin.length !== 6 || !/^\d{6}$/.test(pin)) {
+      errorEl.textContent = '식별번호는 6자리 숫자입니다';
+      return;
+    }
+
+    btn.disabled = true;
+    btn.textContent = '확인 중...';
+    errorEl.textContent = '';
+
+    const result = await verifyUser(nickname, pin);
+
+    btn.disabled = false;
+    btn.textContent = '로그인';
+
+    if (result.error) {
+      errorEl.textContent = result.error;
+      return;
+    }
+
+    // 로그인 성공 → 바로 점수 제출
+    refreshResultUI();
+    await handleSubmitScore();
+  }
+
+  // ── 회원가입 ──
+  async function handleRegister() {
+    const nickname = document.getElementById('regNickname').value.trim();
+    const pin = document.getElementById('regPin').value;
+    const pinConfirm = document.getElementById('regPinConfirm').value;
+    const errorEl = document.getElementById('registerError');
+    const btn = document.getElementById('registerBtn');
+
+    if (!nickname) { errorEl.textContent = '닉네임을 입력하세요'; return; }
+    if (!pin || pin.length !== 6 || !/^\d{6}$/.test(pin)) {
+      errorEl.textContent = '식별번호는 6자리 숫자입니다';
+      return;
+    }
+    if (pin !== pinConfirm) {
+      errorEl.textContent = '식별번호가 일치하지 않습니다';
+      return;
+    }
+    if (!selectedSchool) {
+      errorEl.textContent = '학교를 선택하세요';
+      return;
+    }
+
+    btn.disabled = true;
+    btn.textContent = '가입 중...';
+    errorEl.textContent = '';
+
+    const result = await registerUser({
+      nickname,
+      pin,
+      schoolName: selectedSchool.name,
+      schoolCode: selectedSchool.code,
+      regionCode: selectedSchool.regionCode,
+      regionName: selectedSchool.regionName,
+    });
+
+    btn.disabled = false;
+    btn.textContent = '가입 + 기록 등록';
+
+    if (result.error) {
+      errorEl.textContent = result.error;
+      return;
+    }
+
+    // 가입 성공 → 바로 점수 제출
+    refreshResultUI();
+    await handleSubmitScore();
+  }
+
+  // ── 점수 제출 (로그인 상태에서) ──
+  async function handleSubmitScore() {
+    if (!rankingUser) return;
+
+    const errorEl = document.getElementById('submitError');
+    const btn = document.getElementById('submitBtn');
+    const msgEl = document.getElementById('submitResultMsg');
+
+    btn.disabled = true;
+    btn.textContent = '등록 중...';
+    errorEl.textContent = '';
+
+    const result = await submitScore(
+      lastGameResult?.score || 0,
+      lastGameResult?.compoundsFound || 0,
+    );
+
+    btn.disabled = false;
+    btn.textContent = '기록 등록';
+
+    if (result.error) {
+      errorEl.textContent = '등록 실패: ' + result.error;
+      return;
+    }
+
+    // 결과 메시지 표시
+    const d = result.data;
+    msgEl.style.display = '';
+    if (d.updated) {
+      if (d.prev_score === null) {
+        msgEl.className = 'submit-result-msg success';
+        msgEl.innerHTML = '<b>첫 기록이 등록되었습니다!</b>';
+      } else {
+        msgEl.className = 'submit-result-msg success';
+        msgEl.innerHTML = `<b>새 기록 달성!</b><br>
+          <span class="result-compare">${d.prev_score}점 → ${d.best_score}점</span>`;
+      }
+    } else {
+      msgEl.className = 'submit-result-msg info';
+      msgEl.innerHTML = `<b>기존 최고 기록이 더 좋아요</b><br>
+        <span class="result-compare">최고 기록: ${d.best_score}점 · ${d.best_compounds}개 발견</span>`;
+    }
+
+    // 버튼을 "랭킹 보기"로 변경
+    btn.textContent = '랭킹 보기';
+    btn.onclick = () => showPhase('ranking');
+  }
+
+  // ── 닉네임 중복 확인 (회원가입 시) ──
+  let nicknameCheckTimer = null;
+  document.addEventListener('DOMContentLoaded', () => {
+    const regNicknameEl = document.getElementById('regNickname');
+    if (regNicknameEl) {
+      regNicknameEl.addEventListener('input', () => {
+        clearTimeout(nicknameCheckTimer);
+        const hint = document.getElementById('nicknameCheck');
+        const val = regNicknameEl.value.trim();
+        if (!val) { hint.textContent = ''; return; }
+        hint.textContent = '확인 중...';
+        hint.className = 'field-hint';
+        nicknameCheckTimer = setTimeout(async () => {
+          const exists = await checkNicknameExists(val);
+          if (regNicknameEl.value.trim() !== val) return; // 값 변경됨
+          if (exists) {
+            hint.textContent = '이미 사용 중인 닉네임입니다';
+            hint.className = 'field-hint error';
+          } else {
+            hint.textContent = '사용 가능한 닉네임입니다';
+            hint.className = 'field-hint ok';
+          }
+        }, 500);
+      });
+    }
+  });
+
+  function restartGame() {
+    document.getElementById('gameOverOverlay').classList.remove('show');
+    startGame();
+  }
+
+  function showHelp() {
+    document.getElementById('helpModal').classList.add('show');
+  }
+  function closeHelp() {
+    document.getElementById('helpModal').classList.remove('show');
+  }
+
+  // ── 랜딩 원소 프리뷰 ──
+  function initLandingPreview() {
+    const container = document.getElementById('previewElements');
+    if (!container) return;
+    container.innerHTML = getGameElements().slice(0, 10).map(entry => {
+      const el = ELEMENTS[entry.symbol];
+      return `<div class="preview-ball" style="background:${el.color};color:${el.textColor}">${el.symbol}</div>`;
+    }).join('');
+  }
+
+  // ── 원소 그리드 (게임 화면) ──
+  function initElementGrid() {
+    const grid = document.getElementById('elementGrid');
+    if (!grid) return;
+    grid.innerHTML = '';
+    getGameElements().forEach(entry => {
+      const el = ELEMENTS[entry.symbol];
+      const chip = document.createElement('div');
+      chip.className = 'element-chip';
+      chip.style.background = el.color;
+      chip.style.color = el.textColor;
+      chip.textContent = el.symbol;
+      chip.title = `${el.name} (${el.symbol})`;
+      grid.appendChild(chip);
+    });
+  }
+
+  // 초기화
+  initLandingPreview();
+  initElementGrid();
+</script>
+
+</body>
+</html>
