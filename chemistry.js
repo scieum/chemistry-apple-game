@@ -245,8 +245,9 @@ function checkCovalentBond(counts) {
   // 결합이 하나 이상 있어야 함
   if (totalBondSlots < 2) return false;
 
-  // 같은 원소 2개짜리 (X₂)는 화이트리스트만 허용
-  if (symbols.length === 1 && atomCount === 2) {
+  // 같은 원소만으로 이루어진 분자: X₂만 허용 (H₄, O₄ 등 차단)
+  if (symbols.length === 1) {
+    if (atomCount !== 2) return false;
     if (!VALID_HOMONUCLEAR_DIATOMIC.has(symbols[0])) return false;
   }
 
