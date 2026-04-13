@@ -334,18 +334,40 @@ body {
   box-shadow: var(--shadow);
 }
 
-.title-area {
-  text-align: center;
+.game-top-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
   margin-bottom: 8px;
 }
 
-.title-area h1 {
-  font-size: 20px;
+.game-title-inline {
+  font-size: 18px;
   font-weight: 900;
   background: linear-gradient(135deg, var(--accent), var(--pink));
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
+}
+
+.btn-icon {
+  width: 36px;
+  height: 36px;
+  padding: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(0,0,0,0.05);
+  border-radius: 50%;
+  color: var(--text-secondary);
+  transition: all 0.2s;
+}
+
+.btn-icon:hover {
+  background: rgba(108,99,255,0.12);
+  color: var(--accent);
+  transform: none;
+  box-shadow: none;
 }
 
 .stats-row {
