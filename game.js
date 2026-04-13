@@ -367,19 +367,19 @@ function render() {
 }
 
 function draw() {
-  // 배경
-  ctx.fillStyle = '#0d1420';
+  // 배경 (밝은 파스텔)
+  ctx.fillStyle = '#f0eef6';
   ctx.fillRect(0, 0, CANVAS_WIDTH, CANVAS_HEIGHT);
 
   // 그리드 배경
-  ctx.fillStyle = '#131829';
+  ctx.fillStyle = '#e8e5f0';
   const gx = GRID_OFFSET_X - PADDING;
   const gy = GRID_OFFSET_Y - PADDING;
   const gw = COLS * CELL_SIZE + PADDING * 2;
   const gh = ROWS * CELL_SIZE + PADDING * 2;
   roundRect(ctx, gx, gy, gw, gh, 12);
   ctx.fill();
-  ctx.strokeStyle = 'rgba(255,255,255,0.05)';
+  ctx.strokeStyle = 'rgba(0,0,0,0.05)';
   ctx.lineWidth = 1;
   ctx.stroke();
 
@@ -394,10 +394,10 @@ function draw() {
     const rw = (c2 - c1 + 1) * CELL_SIZE + 4;
     const rh = (r2 - r1 + 1) * CELL_SIZE + 4;
 
-    ctx.fillStyle = 'rgba(255,215,0,0.06)';
+    ctx.fillStyle = 'rgba(108,99,255,0.08)';
     roundRect(ctx, rx, ry, rw, rh, 8);
     ctx.fill();
-    ctx.strokeStyle = 'rgba(255,215,0,0.5)';
+    ctx.strokeStyle = 'rgba(108,99,255,0.5)';
     ctx.lineWidth = 1.5;
     ctx.setLineDash([5, 4]);
     ctx.stroke();
@@ -464,18 +464,18 @@ function draw() {
 
       // 선택 시 하이라이트
       if (cell.selected) {
-        ctx.shadowColor = '#FFD700';
-        ctx.shadowBlur = 16;
-        ctx.strokeStyle = 'rgba(255,215,0,0.7)';
+        ctx.shadowColor = '#6C63FF';
+        ctx.shadowBlur = 14;
+        ctx.strokeStyle = 'rgba(108,99,255,0.7)';
         ctx.lineWidth = 2.5;
         ctx.stroke();
         ctx.shadowBlur = 0;
       } else if (isHover) {
-        ctx.strokeStyle = 'rgba(255,255,255,0.3)';
+        ctx.strokeStyle = 'rgba(0,0,0,0.15)';
         ctx.lineWidth = 1.5;
         ctx.stroke();
       } else {
-        ctx.strokeStyle = 'rgba(0,0,0,0.1)';
+        ctx.strokeStyle = 'rgba(0,0,0,0.06)';
         ctx.lineWidth = 0.5;
         ctx.stroke();
       }
@@ -509,11 +509,11 @@ function draw() {
     ctx.textAlign = 'center';
     // 배경 패널
     const tw = ctx.measureText(m.text).width;
-    ctx.fillStyle = `rgba(0,0,0,${0.5 * alpha})`;
-    roundRect(ctx, CANVAS_WIDTH / 2 - tw / 2 - 12, m.y - 12, tw + 24, 28, 8);
+    ctx.fillStyle = `rgba(108,99,255,${0.85 * alpha})`;
+    roundRect(ctx, CANVAS_WIDTH / 2 - tw / 2 - 14, m.y - 13, tw + 28, 30, 10);
     ctx.fill();
     // 텍스트
-    ctx.fillStyle = '#FFD700';
+    ctx.fillStyle = '#fff';
     ctx.fillText(m.text, CANVAS_WIDTH / 2, m.y + 2);
     ctx.restore();
   }
