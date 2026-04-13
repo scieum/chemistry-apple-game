@@ -140,19 +140,28 @@ body {
   background-clip: text;
 }
 
+.landing-hero {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 28px;
+  margin-bottom: 24px;
+}
+
 .landing-content {
   display: flex;
-  gap: 28px;
-  align-items: flex-start;
-  flex-wrap: wrap;
-  justify-content: center;
+  flex-direction: column;
+  gap: 12px;
 }
 
 .landing-play-area {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 16px;
+}
+
+.landing-elements-preview {
+  flex-shrink: 0;
 }
 
 .landing-logo {
@@ -985,9 +994,9 @@ canvas {
    ═══════════════════════════════════════════════════════ */
 
 @media (max-width: 900px) {
-  .landing-content {
+  .landing-hero {
     flex-direction: column;
-    align-items: center;
+    gap: 16px;
   }
 }
 
