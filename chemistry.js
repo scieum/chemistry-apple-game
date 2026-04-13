@@ -312,6 +312,41 @@ function findCompound(selectedElements) {
   return null;
 }
 
+// 분할 화합물 찾기: H4 → H₂ × 2, O6 → O₂ × 3 등
+// 단일 화합물로 안 되는 경우, 동일 화합물 N개로 분할 가능한지 확인
+function findSplitCompounds(selectedElements) {
+  if (selectedElements.length < 4 || selectedElements.length > 6) return null;
+
+  const counts = countAtoms(selectedElements);
+  const symbols = Object.keys(counts);
+
+  // 2~3분할 시도
+  for (let n = 2; n <= 3; n++) {
+    // 모든 원소 수가 n으로 나누어 떨어져야 함
+    const canSplit = Object.values(counts).every(cnt => cnt % n === 0);
+    if (!canSplit) continue;
+
+    // 분할된 원소 조합
+    const splitCounts = {};
+    for (const [sym, cnt] of Object.entries(counts)) {
+      splitCounts[sym] = cnt / n;
+    }
+
+    // 분할된 조합이 유효한 화합물인지 확인
+    const splitElements = [];
+    for (const [sym, cnt] of Object.entries(splitCounts)) {
+      for (let i = 0; i < cnt; i++) splitElements.push(ELEMENTS[sym]);
+    }
+
+    const compound = findCompound(splitElements);
+    if (compound) {
+      return { compound, count: n, totalAtoms: selectedElements.length };
+    }
+  }
+
+  return null;
+}
+
 // ═══════════════════════════════════════════════════════
 // 화학식 자동 생성
 // ═══════════════════════════════════════════════════════

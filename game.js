@@ -239,6 +239,40 @@ function tryMakeCompound() {
     }, 300);
 
   } else {
+    // 분할 시도 (H4 → H₂ × 2 등)
+    const split = findSplitCompounds(elements);
+    if (split) {
+      combo++;
+      const { compound, count } = split;
+      const isNew = !compoundsFound.some(c => c.formula === compound.formula);
+      const noveltyMultiplier = isNew ? 1.5 : 0.5;
+      const comboMultiplier = 1 + (combo - 1) * 0.3;
+      const earnedPoints = Math.floor(compound.points * count * noveltyMultiplier * comboMultiplier);
+      score += earnedPoints;
+
+      animating = true;
+      for (const c of selectedCells) {
+        grid[c.row][c.col].removing = true;
+      }
+
+      const newTag = isNew ? ' NEW!' : '';
+      const comboText = combo > 1 ? ` ${combo}콤보!` : '';
+      showFloatingMessage(`${compound.formula} ×${count}${newTag} +${earnedPoints}${comboText}`);
+
+      if (isNew) {
+        compoundsFound.push(compound);
+        updateCompoundList();
+      }
+
+      updateUI();
+      setTimeout(() => {
+        removeCells();
+        animating = false;
+        checkAllCleared();
+      }, 300);
+      return;
+    }
+
     // 실패
     combo = 0;
     const counts = countAtoms(selectedCells.map(c => grid[c.row][c.col].element));
@@ -552,7 +586,7 @@ function updateHintDisplay() {
   const compound = findCompound(elements);
   if (compound) {
     const bondLabel = compound.bondType === 'ionic' ? '이온 결합' : '공유 결합';
-    hintEl.innerHTML = `<span style="color:#4eff4e">${compound.formula} ${compound.name} (${bondLabel}) - 손을 떼면 완성!</span>`;
+    hintEl.innerHTML = `<b>${compound.formula} ${compound.name}</b> (${bondLabel}) - 손을 떼면 완성!`;
     return;
   }
 
@@ -564,9 +598,9 @@ function updateHintDisplay() {
       const needed = remaining.map(([s, c]) => `${s}${c > 1 ? '×' + c : ''}`).join('+');
       return `${m.compound.formula}(+${needed})`;
     });
-    hintEl.innerHTML = `<span style="color:#FFD700">${currentFormula}</span> → ${hints.join(' | ')}`;
+    hintEl.innerHTML = `<b>${currentFormula}</b> → ${hints.join(' | ')}`;
   } else {
-    hintEl.innerHTML = `<span style="color:#FF6B6B">${currentFormula}</span> - 가능한 화합물 없음`;
+    hintEl.innerHTML = `<span style="color:#FF3B30"><b>${currentFormula}</b> - 가능한 화합물 없음</span>`;
   }
 }
 
