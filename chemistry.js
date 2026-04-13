@@ -223,6 +223,7 @@ function checkCovalentBond(counts) {
   let totalBondSlots = 0;
   let atomCount = 0;
   let hasMetal = false;
+  let maxBonds = 0;
   const symbols = Object.keys(counts);
 
   for (const [sym, cnt] of Object.entries(counts)) {
@@ -231,20 +232,37 @@ function checkCovalentBond(counts) {
     if (el.type === 'metal') hasMetal = true;
     totalBondSlots += el.bonds * cnt;
     atomCount += cnt;
+    // 각 개별 원자 중 최대 결합 수
+    if (el.bonds > maxBonds) maxBonds = el.bonds;
   }
 
   // 금속이 포함되면 공유결합 아님
   if (hasMetal) return false;
   // 원자 1개만으론 분자 아님
   if (atomCount < 2) return false;
-  // 총 결합 슬롯이 짝수여야 함 (각 결합은 양쪽에서 1개씩)
+  // 총 결합 슬롯이 짝수여야 함
   if (totalBondSlots % 2 !== 0) return false;
   // 결합이 하나 이상 있어야 함
   if (totalBondSlots < 2) return false;
 
-  // 같은 원소 2개짜리 (X₂)는 화이트리스트만 허용 (S₂, P₂, B₂ 등 차단)
+  // 같은 원소 2개짜리 (X₂)는 화이트리스트만 허용
   if (symbols.length === 1 && atomCount === 2) {
     if (!VALID_HOMONUCLEAR_DIATOMIC.has(symbols[0])) return false;
+  }
+
+  // 핵심: 각 원자의 결합 수가 나머지 원자들의 결합 수 합 이하여야 함
+  // (CH₂ 차단: C(4) > H+H(2), CSi 통과하지만 아래서 2원자 이종 체크)
+  for (const [sym, cnt] of Object.entries(counts)) {
+    const el = ELEMENTS[sym];
+    const mySlots = el.bonds; // 개별 원자 1개의 결합 수
+    const otherSlots = totalBondSlots - mySlots; // 그 원자를 제외한 나머지 총 결합
+    if (mySlots > otherSlots) return false;
+  }
+
+  // 2원자 이종 분자(예: CSi)는 등록된 것만 허용
+  if (atomCount === 2 && symbols.length === 2) {
+    const key = atomKey(counts);
+    if (!COMPOUND_NAMES[key]) return false;
   }
 
   return true;
@@ -264,21 +282,21 @@ function findCompound(selectedElements) {
 
   const counts = countAtoms(selectedElements);
   const key = atomKey(counts);
-
-  // COMPOUND_NAMES에 등록된 화합물만 인정
   const nameEntry = COMPOUND_NAMES[key];
-  if (!nameEntry) return null;
 
   // 1. 이온 결합 체크 (공유결합 전용 모드에서는 건너뜀)
   if (gameMode !== 'covalent' && checkIonicBond(counts)) {
+    if (!nameEntry) return null; // 이온 결합은 등록된 것만
     const points = calcBasePoints(selectedElements.length);
     return { atoms: counts, formula: nameEntry.formula, name: nameEntry.name, bondType: 'ionic', points };
   }
 
-  // 2. 공유 결합 체크
+  // 2. 공유 결합 체크 (등록 안 되어도 결합 검증 통과하면 허용)
   if (checkCovalentBond(counts)) {
+    const formula = nameEntry ? nameEntry.formula : generateFormula(counts, 'covalent');
+    const name = nameEntry ? nameEntry.name : '공유 화합물';
     const points = calcBasePoints(selectedElements.length);
-    return { atoms: counts, formula: nameEntry.formula, name: nameEntry.name, bondType: 'covalent', points };
+    return { atoms: counts, formula, name, bondType: 'covalent', points };
   }
 
   return null;
