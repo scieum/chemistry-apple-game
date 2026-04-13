@@ -112,6 +112,10 @@ body {
   padding: 40px 32px;
   border: 1px solid var(--glass-border);
   box-shadow: var(--shadow-lg);
+  min-height: calc(100vh - 32px);
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
 }
 
 .landing-header {
