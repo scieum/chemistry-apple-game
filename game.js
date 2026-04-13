@@ -269,13 +269,18 @@ function startTimer() {
 }
 
 function updateTimerDisplay() {
-  const el = document.getElementById('timerValue');
-  if (!el) return;
-  const min = Math.floor(timeRemaining / 60);
-  const sec = timeRemaining % 60;
-  el.textContent = `${min}:${sec.toString().padStart(2, '0')}`;
-  // 30초 이하일 때 빨간색
-  el.style.color = timeRemaining <= 30 ? '#FF4444' : timeRemaining <= 60 ? '#FFA500' : '#FFF';
+  const gauge = document.getElementById('timeGaugeFill');
+  if (!gauge) return;
+  const pct = (timeRemaining / TIME_LIMIT) * 100;
+  gauge.style.height = pct + '%';
+
+  // 색상 변경
+  gauge.classList.remove('warning', 'danger');
+  if (timeRemaining <= 30) {
+    gauge.classList.add('danger');
+  } else if (timeRemaining <= 60) {
+    gauge.classList.add('warning');
+  }
 }
 
 let onGameEnd = null; // 외부 콜백

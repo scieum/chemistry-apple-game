@@ -65,7 +65,10 @@
       </div>
 
       <div class="landing-footer">
-        <span>sci_eum</span>
+        <span>&copy; 2026 사이음(sci_eum). 과학의 사이, 사람을 잇다.</span>
+        <a href="https://www.instagram.com/sci_eum/" target="_blank" rel="noopener" class="footer-instagram" title="Instagram">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="2" width="20" height="20" rx="5" ry="5"/><path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"/><line x1="17.5" y1="6.5" x2="17.51" y2="6.5"/></svg>
+        </a>
       </div>
     </div>
   </div>
@@ -91,40 +94,25 @@
           <div class="stat-value combo" id="comboValue">-</div>
         </div>
         <div class="stat">
-          <div class="stat-label">시간</div>
-          <div class="stat-value timer" id="timerValue">2:00</div>
-        </div>
-        <div class="stat">
           <div class="stat-label">발견</div>
           <div class="stat-value" id="foundCount">0</div>
         </div>
       </div>
     </div>
 
-    <div class="game-board-wrapper">
-      <canvas id="gameCanvas"></canvas>
+    <div class="game-board-area">
+      <div class="game-board-wrapper">
+        <canvas id="gameCanvas"></canvas>
+      </div>
+      <div class="time-gauge-wrapper">
+        <div class="time-gauge-track">
+          <div class="time-gauge-fill" id="timeGaugeFill"></div>
+        </div>
+      </div>
     </div>
 
     <div class="hint-bar">
       <span id="hintText">인접한 원소를 드래그하여 화합물을 만드세요!</span>
-    </div>
-
-    <div class="bottom-panels">
-      <div class="panel-section compounds-panel">
-        <div class="panel-title">발견한 화합물</div>
-        <div id="compoundList" class="compound-list">
-          <div class="empty-text">아직 발견한 화합물이 없습니다</div>
-        </div>
-      </div>
-      <div class="panel-section elements-panel">
-        <div class="panel-title">등장 원소</div>
-        <div class="element-grid" id="elementGrid"></div>
-        <div class="help-mini">
-          <b>이온 결합</b>: 금속 + 비금속<br>
-          <b>공유 결합</b>: 비금속 + 비금속<br>
-          직사각형으로 <b>드래그</b>하여 선택!
-        </div>
-      </div>
     </div>
   </div>
 </div>
