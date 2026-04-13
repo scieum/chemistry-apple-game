@@ -272,6 +272,10 @@ function checkCovalentBond(counts) {
 // 화합물 찾기 메인 함수
 // ═══════════════════════════════════════════════════════
 
+function hasMetal(counts) {
+  return Object.keys(counts).some(sym => ELEMENTS[sym]?.type === 'metal');
+}
+
 function calcBasePoints(atomCount) {
   const sizeBonus = atomCount <= 2 ? 0 : atomCount === 3 ? 100 : atomCount === 4 ? 200 : atomCount === 5 ? 400 : 600;
   return atomCount * 100 + sizeBonus;
@@ -291,12 +295,18 @@ function findCompound(selectedElements) {
     return { atoms: counts, formula: nameEntry.formula, name: nameEntry.name, bondType: 'ionic', points };
   }
 
-  // 2. 공유 결합 체크 (등록 안 되어도 결합 검증 통과하면 허용)
+  // 2. 공유 결합 체크
   if (checkCovalentBond(counts)) {
     const formula = nameEntry ? nameEntry.formula : generateFormula(counts, 'covalent');
     const name = nameEntry ? nameEntry.name : '공유 화합물';
     const points = calcBasePoints(selectedElements.length);
     return { atoms: counts, formula, name, bondType: 'covalent', points };
+  }
+
+  // 3. 등록된 화합물인데 결합 검증 실패 (NO₂ 같은 라디칼)
+  if (nameEntry && !hasMetal(counts)) {
+    const points = calcBasePoints(selectedElements.length);
+    return { atoms: counts, formula: nameEntry.formula, name: nameEntry.name, bondType: 'covalent', points };
   }
 
   return null;

@@ -365,19 +365,19 @@ function render() {
 
 function draw() {
   // 배경
-  ctx.fillStyle = '#1a1a2e';
+  ctx.fillStyle = '#0d1420';
   ctx.fillRect(0, 0, CANVAS_WIDTH, CANVAS_HEIGHT);
 
   // 그리드 배경
-  ctx.fillStyle = '#16213e';
+  ctx.fillStyle = '#131829';
   const gx = GRID_OFFSET_X - PADDING;
   const gy = GRID_OFFSET_Y - PADDING;
   const gw = COLS * CELL_SIZE + PADDING * 2;
   const gh = ROWS * CELL_SIZE + PADDING * 2;
   roundRect(ctx, gx, gy, gw, gh, 12);
   ctx.fill();
-  ctx.strokeStyle = 'rgba(255,255,255,0.08)';
-  ctx.lineWidth = 2;
+  ctx.strokeStyle = 'rgba(255,255,255,0.05)';
+  ctx.lineWidth = 1;
   ctx.stroke();
 
   // 직사각형 선택 영역 표시
@@ -391,12 +391,12 @@ function draw() {
     const rw = (c2 - c1 + 1) * CELL_SIZE + 4;
     const rh = (r2 - r1 + 1) * CELL_SIZE + 4;
 
-    ctx.fillStyle = 'rgba(255,215,0,0.08)';
-    roundRect(ctx, rx, ry, rw, rh, 6);
+    ctx.fillStyle = 'rgba(255,215,0,0.06)';
+    roundRect(ctx, rx, ry, rw, rh, 8);
     ctx.fill();
-    ctx.strokeStyle = 'rgba(255,215,0,0.6)';
-    ctx.lineWidth = 2;
-    ctx.setLineDash([6, 4]);
+    ctx.strokeStyle = 'rgba(255,215,0,0.5)';
+    ctx.lineWidth = 1.5;
+    ctx.setLineDash([5, 4]);
     ctx.stroke();
     ctx.setLineDash([]);
   }
@@ -415,65 +415,83 @@ function draw() {
 
       ctx.save();
 
-      // 제거 중이면 페이드아웃
+      // 제거 중이면 페이드아웃 + 축소
       if (cell.removing) {
-        cell.opacity -= 0.08;
+        cell.opacity -= 0.06;
+        cell.scale -= 0.03;
         if (cell.opacity < 0) cell.opacity = 0;
+        if (cell.scale < 0) cell.scale = 0;
         ctx.globalAlpha = cell.opacity;
       }
 
       // 호버 효과
       const isHover = hoverCell && hoverCell.row === r && hoverCell.col === c && !cell.selected;
 
-      // 그림자
+      // 그림자 (더 부드럽게)
       ctx.beginPath();
-      ctx.arc(center.x + 1, center.y + 1, radius, 0, Math.PI * 2);
-      ctx.fillStyle = 'rgba(0,0,0,0.2)';
+      ctx.arc(center.x + 2, center.y + 3, radius + 1, 0, Math.PI * 2);
+      ctx.fillStyle = 'rgba(0,0,0,0.25)';
       ctx.fill();
 
-      // 공 본체
+      // 공 본체 (3D 효과 강화)
       const gradient = ctx.createRadialGradient(
-        center.x - radius * 0.3, center.y - radius * 0.3, radius * 0.1,
-        center.x, center.y, radius
+        center.x - radius * 0.35, center.y - radius * 0.35, radius * 0.05,
+        center.x + radius * 0.1, center.y + radius * 0.1, radius
       );
-      gradient.addColorStop(0, lightenColor(el.color, 50));
-      gradient.addColorStop(1, el.color);
+      gradient.addColorStop(0, lightenColor(el.color, 80));
+      gradient.addColorStop(0.4, lightenColor(el.color, 20));
+      gradient.addColorStop(1, darkenColor(el.color, 30));
 
       ctx.beginPath();
       ctx.arc(center.x, center.y, radius, 0, Math.PI * 2);
       ctx.fillStyle = gradient;
       ctx.fill();
 
+      // 하이라이트 점 (상단)
+      const hlGrad = ctx.createRadialGradient(
+        center.x - radius * 0.25, center.y - radius * 0.3, 0,
+        center.x - radius * 0.25, center.y - radius * 0.3, radius * 0.4
+      );
+      hlGrad.addColorStop(0, 'rgba(255,255,255,0.35)');
+      hlGrad.addColorStop(1, 'rgba(255,255,255,0)');
+      ctx.beginPath();
+      ctx.arc(center.x, center.y, radius, 0, Math.PI * 2);
+      ctx.fillStyle = hlGrad;
+      ctx.fill();
+
       // 선택 시 하이라이트
       if (cell.selected) {
-        ctx.strokeStyle = '#FFD700';
-        ctx.lineWidth = 3;
-        ctx.stroke();
         ctx.shadowColor = '#FFD700';
-        ctx.shadowBlur = 12;
-        ctx.beginPath();
-        ctx.arc(center.x, center.y, radius + 2, 0, Math.PI * 2);
-        ctx.strokeStyle = 'rgba(255,215,0,0.4)';
-        ctx.lineWidth = 2;
+        ctx.shadowBlur = 16;
+        ctx.strokeStyle = 'rgba(255,215,0,0.7)';
+        ctx.lineWidth = 2.5;
         ctx.stroke();
         ctx.shadowBlur = 0;
       } else if (isHover) {
-        ctx.strokeStyle = 'rgba(255,255,255,0.4)';
-        ctx.lineWidth = 2;
+        ctx.strokeStyle = 'rgba(255,255,255,0.3)';
+        ctx.lineWidth = 1.5;
         ctx.stroke();
       } else {
-        ctx.strokeStyle = 'rgba(0,0,0,0.15)';
-        ctx.lineWidth = 1;
+        ctx.strokeStyle = 'rgba(0,0,0,0.1)';
+        ctx.lineWidth = 0.5;
         ctx.stroke();
       }
 
       // 원소 기호
       ctx.fillStyle = el.textColor;
-      const fontSize = el.symbol.length > 1 ? radius * 0.75 : radius * 0.9;
-      ctx.font = `bold ${fontSize}px 'Segoe UI', sans-serif`;
+      const fontSize = el.symbol.length > 1 ? radius * 0.7 : radius * 0.85;
+      ctx.font = `bold ${fontSize}px 'Noto Sans KR', 'Segoe UI', sans-serif`;
       ctx.textAlign = 'center';
       ctx.textBaseline = 'middle';
-      ctx.fillText(el.symbol, center.x, center.y);
+      // 텍스트 그림자
+      ctx.shadowColor = 'rgba(0,0,0,0.3)';
+      ctx.shadowBlur = 2;
+      ctx.shadowOffsetX = 1;
+      ctx.shadowOffsetY = 1;
+      ctx.fillText(el.symbol, center.x, center.y + 0.5);
+      ctx.shadowBlur = 0;
+      ctx.shadowOffsetX = 0;
+      ctx.shadowOffsetY = 0;
 
       ctx.restore();
     }
@@ -482,14 +500,18 @@ function draw() {
   // 떠다니는 메시지
   for (const m of floatingMessages) {
     ctx.save();
-    ctx.globalAlpha = Math.min(1, m.life * 2);
-    ctx.fillStyle = '#FFD700';
-    ctx.font = 'bold 16px "Noto Sans KR", "Segoe UI", sans-serif';
+    const alpha = Math.min(1, m.life * 2.5);
+    ctx.globalAlpha = alpha;
+    ctx.font = 'bold 15px "Noto Sans KR", "Segoe UI", sans-serif';
     ctx.textAlign = 'center';
-    ctx.strokeStyle = 'rgba(0,0,0,0.7)';
-    ctx.lineWidth = 3;
-    ctx.strokeText(m.text, CANVAS_WIDTH / 2, m.y);
-    ctx.fillText(m.text, CANVAS_WIDTH / 2, m.y);
+    // 배경 패널
+    const tw = ctx.measureText(m.text).width;
+    ctx.fillStyle = `rgba(0,0,0,${0.5 * alpha})`;
+    roundRect(ctx, CANVAS_WIDTH / 2 - tw / 2 - 12, m.y - 12, tw + 24, 28, 8);
+    ctx.fill();
+    // 텍스트
+    ctx.fillStyle = '#FFD700';
+    ctx.fillText(m.text, CANVAS_WIDTH / 2, m.y + 2);
     ctx.restore();
   }
 }
@@ -569,6 +591,14 @@ function lightenColor(hex, percent) {
   const r = Math.min(255, (num >> 16) + percent);
   const g = Math.min(255, ((num >> 8) & 0x00FF) + percent);
   const b = Math.min(255, (num & 0x0000FF) + percent);
+  return `rgb(${r},${g},${b})`;
+}
+
+function darkenColor(hex, percent) {
+  const num = parseInt(hex.replace('#', ''), 16);
+  const r = Math.max(0, (num >> 16) - percent);
+  const g = Math.max(0, ((num >> 8) & 0x00FF) - percent);
+  const b = Math.max(0, (num & 0x0000FF) - percent);
   return `rgb(${r},${g},${b})`;
 }
 
