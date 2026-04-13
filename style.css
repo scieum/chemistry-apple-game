@@ -339,15 +339,19 @@ body {
   align-items: center;
   justify-content: space-between;
   margin-bottom: 8px;
+  gap: 12px;
 }
 
 .game-title-inline {
+  flex: 1;
+  text-align: center;
   font-size: 18px;
   font-weight: 900;
   background: linear-gradient(135deg, var(--accent), var(--pink));
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
+  white-space: nowrap;
 }
 
 .btn-icon {
@@ -497,7 +501,8 @@ canvas {
   border-radius: var(--r-md);
   border: 1px solid var(--glass-border);
   font-size: 13px;
-  color: var(--text-secondary);
+  font-weight: 500;
+  color: var(--text);
   min-height: 40px;
   display: flex;
   align-items: center;
