@@ -295,7 +295,8 @@ body {
 
 .landing-footer {
   text-align: center;
-  margin-top: 28px;
+  margin-top: auto;
+  padding-top: 28px;
   font-size: 12px;
   color: var(--text-muted);
   display: flex;

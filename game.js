@@ -4,10 +4,7 @@
 // ═══════════════════════════════════════════════════════
 
 const COLS = 17;
-const BASE_ROWS = 10;
-// 모바일(세로 화면)이면 행 추가
-const IS_PORTRAIT = window.innerHeight > window.innerWidth;
-const ROWS = IS_PORTRAIT ? 14 : BASE_ROWS;
+const ROWS = 10;
 const CELL_SIZE = 44;
 const PADDING = 6;
 const GRID_OFFSET_X = 20;
