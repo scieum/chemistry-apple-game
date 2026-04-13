@@ -148,11 +148,17 @@ body {
   justify-content: center;
 }
 
-.landing-play-area {
+.landing-left {
   display: flex;
   flex-direction: column;
   align-items: center;
   gap: 16px;
+}
+
+.landing-play-area {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
 }
 
 .landing-logo {
