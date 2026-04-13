@@ -4,6 +4,24 @@
 
 @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;700;900&display=swap');
 
+@font-face {
+  font-family: 'KBO Dia Gothic';
+  src: url('FONTS/KBO Dia Gothic_light.ttf') format('truetype');
+  font-weight: 300;
+}
+
+@font-face {
+  font-family: 'KBO Dia Gothic';
+  src: url('FONTS/KBO Dia Gothic_medium.ttf') format('truetype');
+  font-weight: 500;
+}
+
+@font-face {
+  font-family: 'KBO Dia Gothic';
+  src: url('FONTS/KBO Dia Gothic_bold.ttf') format('truetype');
+  font-weight: 700;
+}
+
 :root {
   --grad-1: #a18cd1;
   --grad-2: #fbc2eb;
@@ -38,7 +56,7 @@ body {
   background: linear-gradient(135deg, var(--grad-1), var(--grad-2), var(--grad-3));
   background-attachment: fixed;
   color: var(--text);
-  font-family: 'Noto Sans KR', 'Segoe UI', sans-serif;
+  font-family: 'KBO Dia Gothic', 'Noto Sans KR', 'Segoe UI', sans-serif;
   display: flex;
   justify-content: center;
   min-height: 100vh;

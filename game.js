@@ -483,7 +483,7 @@ function draw() {
       // 원소 기호
       ctx.fillStyle = el.textColor;
       const fontSize = el.symbol.length > 1 ? radius * 0.7 : radius * 0.85;
-      ctx.font = `bold ${fontSize}px 'Noto Sans KR', 'Segoe UI', sans-serif`;
+      ctx.font = `bold ${fontSize}px 'KBO Dia Gothic', 'Noto Sans KR', sans-serif`;
       ctx.textAlign = 'center';
       ctx.textBaseline = 'middle';
       // 텍스트 그림자
