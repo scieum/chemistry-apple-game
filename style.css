@@ -1128,6 +1128,45 @@ canvas {
   color: #666;
 }
 
+/* ── 랭킹 화합물 펼침 ── */
+
+.ranking-row {
+  cursor: pointer;
+}
+
+.ranking-compounds {
+  padding: 8px 12px 12px 48px;
+  border-bottom: 1px solid rgba(255,255,255,0.05);
+}
+
+.compounds-label {
+  font-size: 11px;
+  color: #888;
+  margin-bottom: 6px;
+}
+
+.compounds-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px;
+}
+
+.compound-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 12px;
+  padding: 3px 8px;
+  background: rgba(255,255,255,0.06);
+  border-radius: 6px;
+  color: #CCC;
+}
+
+.compound-tag-name {
+  font-size: 10px;
+  color: #888;
+}
+
 .ranking-footer {
   margin-top: 16px;
   text-align: center;

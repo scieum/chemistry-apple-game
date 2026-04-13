@@ -431,6 +431,7 @@
     const result = await submitScore(
       lastGameResult?.score || 0,
       lastGameResult?.compoundsFound || 0,
+      lastGameResult?.compoundsList || [],
     );
 
     btn.disabled = false;
@@ -462,6 +463,13 @@
     // 버튼을 "랭킹 보기"로 변경
     btn.textContent = '랭킹 보기';
     btn.onclick = () => showPhase('ranking');
+  }
+
+  // ── 랭킹 화합물 토글 ──
+  function toggleCompounds(index) {
+    const el = document.getElementById('compounds-' + index);
+    if (!el) return;
+    el.style.display = el.style.display === 'none' ? '' : 'none';
   }
 
   // ── 닉네임 중복 확인 (회원가입 시) ──

@@ -254,28 +254,31 @@ function checkCovalentBond(counts) {
 // 화합물 찾기 메인 함수
 // ═══════════════════════════════════════════════════════
 
+function calcBasePoints(atomCount) {
+  const sizeBonus = atomCount <= 2 ? 0 : atomCount === 3 ? 100 : atomCount === 4 ? 200 : atomCount === 5 ? 400 : 600;
+  return atomCount * 100 + sizeBonus;
+}
+
 function findCompound(selectedElements) {
-  if (selectedElements.length < 2) return null;
+  if (selectedElements.length < 2 || selectedElements.length > 6) return null;
 
   const counts = countAtoms(selectedElements);
   const key = atomKey(counts);
 
+  // COMPOUND_NAMES에 등록된 화합물만 인정
+  const nameEntry = COMPOUND_NAMES[key];
+  if (!nameEntry) return null;
+
   // 1. 이온 결합 체크 (공유결합 전용 모드에서는 건너뜀)
   if (gameMode !== 'covalent' && checkIonicBond(counts)) {
-    const nameEntry = COMPOUND_NAMES[key];
-    const formula = nameEntry ? nameEntry.formula : generateFormula(counts, 'ionic');
-    const name = nameEntry ? nameEntry.name : '이온 화합물';
-    const points = selectedElements.length * 100 + (selectedElements.length > 3 ? 200 : 0);
-    return { atoms: counts, formula, name, bondType: 'ionic', points };
+    const points = calcBasePoints(selectedElements.length);
+    return { atoms: counts, formula: nameEntry.formula, name: nameEntry.name, bondType: 'ionic', points };
   }
 
   // 2. 공유 결합 체크
   if (checkCovalentBond(counts)) {
-    const nameEntry = COMPOUND_NAMES[key];
-    const formula = nameEntry ? nameEntry.formula : generateFormula(counts, 'covalent');
-    const name = nameEntry ? nameEntry.name : '공유 화합물';
-    const points = selectedElements.length * 100 + (selectedElements.length > 3 ? 200 : 0);
-    return { atoms: counts, formula, name, bondType: 'covalent', points };
+    const points = calcBasePoints(selectedElements.length);
+    return { atoms: counts, formula: nameEntry.formula, name: nameEntry.name, bondType: 'covalent', points };
   }
 
   return null;

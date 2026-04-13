@@ -166,6 +166,10 @@ function updateRectSelection() {
   const c1 = Math.min(dragStartCell.col, dragEndCell.col);
   const c2 = Math.max(dragStartCell.col, dragEndCell.col);
 
+  // 최대 6셀 제한: 영역이 6칸 초과면 선택 안 함
+  const cellCount = (r2 - r1 + 1) * (c2 - c1 + 1);
+  if (cellCount > 6) return;
+
   for (let r = r1; r <= r2; r++) {
     for (let c = c1; c <= c2; c++) {
       if (grid[r][c]) {
@@ -198,9 +202,11 @@ function tryMakeCompound() {
   if (compound) {
     // 성공!
     combo++;
-    const comboMultiplier = 1 + (combo - 1) * 0.5;
+    const isNew = !compoundsFound.some(c => c.formula === compound.formula);
+    const noveltyMultiplier = isNew ? 1.5 : 0.5;
+    const comboMultiplier = 1 + (combo - 1) * 0.3;
     const ionicBonus = compound.bondType === 'ionic' ? 1.5 : 1;
-    const earnedPoints = Math.floor(compound.points * comboMultiplier * ionicBonus);
+    const earnedPoints = Math.floor(compound.points * noveltyMultiplier * comboMultiplier * ionicBonus);
     score += earnedPoints;
 
     // 애니메이션: 제거
@@ -210,12 +216,12 @@ function tryMakeCompound() {
     }
 
     // 메시지
-    const bondLabel = compound.bondType === 'ionic' ? '이온 결합' : '공유 결합';
+    const newTag = isNew ? ' NEW!' : '';
     const comboText = combo > 1 ? ` ${combo}콤보!` : '';
-    showFloatingMessage(`${compound.formula} ${compound.name} (${bondLabel}) +${earnedPoints}${comboText}`);
+    showFloatingMessage(`${compound.formula} ${compound.name}${newTag} +${earnedPoints}${comboText}`);
 
     // 발견 기록
-    if (!compoundsFound.some(c => c.formula === compound.formula)) {
+    if (isNew) {
       compoundsFound.push(compound);
       updateCompoundList();
     }
@@ -291,7 +297,12 @@ function endGame(title) {
 
   // 외부 콜백이 있으면 호출 (phase 전환용)
   if (typeof onGameEnd === 'function') {
-    onGameEnd({ score, compoundsFound: compoundsFound.length, title: title || 'GAME OVER' });
+    onGameEnd({
+      score,
+      compoundsFound: compoundsFound.length,
+      compoundsList: compoundsFound.map(c => ({ formula: c.formula, name: c.name, bondType: c.bondType })),
+      title: title || 'GAME OVER',
+    });
     return;
   }
 

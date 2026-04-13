@@ -30,6 +30,7 @@ create table chem_rankings (
   region_name     text,
   score           int not null default 0 check (score >= 0),
   compounds_found int not null default 0 check (compounds_found >= 0),
+  compounds       jsonb not null default '[]'::jsonb,
   updated_at      timestamptz not null default now()
 );
 
@@ -126,7 +127,8 @@ create or replace function submit_score(
   p_nickname        text,
   p_pin_hash        text,
   p_score           int,
-  p_compounds_found int
+  p_compounds_found int,
+  p_compounds       jsonb default '[]'::jsonb
 )
 returns jsonb
 language plpgsql security definer
@@ -169,19 +171,20 @@ begin
   if v_prev_score is null then
     -- 첫 기록
     insert into chem_rankings (user_id, nickname, school_name, region_name,
-                                score, compounds_found, updated_at)
+                                score, compounds_found, compounds, updated_at)
     values (v_user_id, v_nick, v_school, v_region,
-            p_score, p_compounds_found, now());
+            p_score, p_compounds_found, p_compounds, now());
     v_updated := true;
     v_best_score := p_score;
     v_best_compounds := p_compounds_found;
 
   elsif (p_score > v_prev_score)
      or (p_score = v_prev_score and p_compounds_found > v_prev_compounds) then
-    -- 새 기록이 더 좋음: 점수가 높거나, 같으면 화합물 더 많이 발견
+    -- 새 기록이 더 좋음
     update chem_rankings
        set score           = p_score,
            compounds_found = p_compounds_found,
+           compounds       = p_compounds,
            nickname        = v_nick,
            school_name     = v_school,
            region_name     = v_region,
@@ -217,6 +220,7 @@ returns table (
   region_name     text,
   score           int,
   compounds_found int,
+  compounds       jsonb,
   updated_at      timestamptz
 )
 language sql stable security definer
@@ -230,6 +234,7 @@ as $$
     region_name,
     score,
     compounds_found,
+    compounds,
     updated_at
   from chem_rankings
   order by score desc, compounds_found desc, updated_at asc
@@ -296,6 +301,6 @@ $$;
 grant execute on function nickname_exists(text)                    to anon, authenticated;
 grant execute on function register_user(text, text, text, text, text, text) to anon, authenticated;
 grant execute on function verify_user(text, text)                  to anon, authenticated;
-grant execute on function submit_score(text, text, int, int)       to anon, authenticated;
+grant execute on function submit_score(text, text, int, int, jsonb) to anon, authenticated;
 grant execute on function get_top_ranking(int)                     to anon, authenticated;
 grant execute on function get_neighbors(text, int)                 to anon, authenticated;

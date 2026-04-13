@@ -143,7 +143,7 @@ async function verifyUser(nickname, pin) {
 // RPC: 점수 제출 (최고 기록만 유지)
 // ═══════════════════════════════════════════════════════
 
-async function submitScore(score, compoundsFound) {
+async function submitScore(score, compoundsFound, compoundsList) {
   if (!rankingUser) return { error: '로그인이 필요합니다' };
 
   const sb = initSupabase();
@@ -154,6 +154,7 @@ async function submitScore(score, compoundsFound) {
     p_pin_hash: rankingUser.pinHash,
     p_score: score,
     p_compounds_found: compoundsFound,
+    p_compounds: compoundsList || [],
   });
 
   if (error) {
@@ -305,12 +306,21 @@ async function renderRankingBoard() {
     return;
   }
 
-  list.innerHTML = rankings.map((r) => {
+  list.innerHTML = rankings.map((r, i) => {
     const medal = r.rank === 1 ? '🥇' : r.rank === 2 ? '🥈' : r.rank === 3 ? '🥉' : `${r.rank}`;
     const ago = getRelativeTime(r.updated_at);
     const isMe = rankingUser && r.nickname === rankingUser.nickname;
     const highlight = isMe ? 'ranking-highlight' : '';
-    return `<div class="ranking-row ${highlight}">
+    const compounds = r.compounds || [];
+    const compoundsHtml = compounds.length > 0
+      ? compounds.map(c => {
+          const badge = c.bondType === 'ionic'
+            ? '<span class="badge ionic">이온</span>'
+            : '<span class="badge covalent">공유</span>';
+          return `<span class="compound-tag">${badge} ${escapeHtml(c.formula)} <span class="compound-tag-name">${escapeHtml(c.name)}</span></span>`;
+        }).join('')
+      : '<span class="empty-text">정보 없음</span>';
+    return `<div class="ranking-row ${highlight}" onclick="toggleCompounds(${i})">
       <span class="ranking-rank">${medal}</span>
       <div class="ranking-info">
         <span class="ranking-name">${escapeHtml(r.nickname)}${isMe ? ' (나)' : ''}</span>
@@ -320,6 +330,10 @@ async function renderRankingBoard() {
         <span class="ranking-score">${r.score}점</span>
         <span class="ranking-meta">${r.compounds_found}개 발견 · ${ago}</span>
       </div>
+    </div>
+    <div class="ranking-compounds" id="compounds-${i}" style="display:none">
+      <div class="compounds-label">발견한 화합물</div>
+      <div class="compounds-list">${compoundsHtml}</div>
     </div>`;
   }).join('');
 }
