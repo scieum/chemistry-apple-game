@@ -185,9 +185,9 @@ body {
 }
 
 .preview-row {
-  display: flex;
+  display: grid;
+  grid-template-columns: repeat(5, auto);
   gap: 6px;
-  flex-wrap: wrap;
   justify-content: center;
 }
 
