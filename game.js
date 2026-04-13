@@ -492,8 +492,7 @@ function updateUI() {
   const comboEl = document.getElementById('comboValue');
   if (scoreEl) scoreEl.textContent = score;
   if (comboEl) {
-    comboEl.textContent = combo > 0 ? `${combo}x` : '-';
-    comboEl.style.color = combo > 1 ? '#FFD700' : '#AAA';
+    comboEl.textContent = combo > 1 ? `${combo} COMBO!` : '';
   }
   updateTimerDisplay();
 }

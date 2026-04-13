@@ -242,7 +242,8 @@ async function fetchSchools(regionCode) {
 
   const schools = [];
   let page = 1;
-  const pageSize = 1000;
+  // API 키 없으면 pSize 최대 100, 있으면 1000
+  const pageSize = CONFIG.NEIS_API_KEY ? 1000 : 100;
 
   try {
     while (true) {
