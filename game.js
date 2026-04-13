@@ -166,17 +166,20 @@ function updateRectSelection() {
   const c1 = Math.min(dragStartCell.col, dragEndCell.col);
   const c2 = Math.max(dragStartCell.col, dragEndCell.col);
 
-  // 최대 6셀 제한: 영역이 6칸 초과면 선택 안 함
-  const cellCount = (r2 - r1 + 1) * (c2 - c1 + 1);
-  if (cellCount > 6) return;
-
+  // 실제 원소가 있는 셀만 수집
+  const candidates = [];
   for (let r = r1; r <= r2; r++) {
     for (let c = c1; c <= c2; c++) {
-      if (grid[r][c]) {
-        grid[r][c].selected = true;
-        selectedCells.push({ row: r, col: c });
-      }
+      if (grid[r][c]) candidates.push({ row: r, col: c });
     }
+  }
+
+  // 최대 6원소 제한 (빈 칸은 세지 않음)
+  if (candidates.length > 6) return;
+
+  for (const cell of candidates) {
+    grid[cell.row][cell.col].selected = true;
+    selectedCells.push(cell);
   }
   updateHintDisplay();
 }
