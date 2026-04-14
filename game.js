@@ -582,26 +582,7 @@ function updateHintDisplay() {
     .map(([sym, cnt]) => cnt > 1 ? sym + subscript(cnt) : sym)
     .join('');
 
-  // 완성 가능한 화합물 체크
-  const compound = findCompound(elements);
-  if (compound) {
-    const bondLabel = compound.bondType === 'ionic' ? '이온 결합' : '공유 결합';
-    hintEl.innerHTML = `<b>${compound.formula} ${compound.name}</b> (${bondLabel}) - 손을 떼면 완성!`;
-    return;
-  }
-
-  const matches = findPartialMatches(elements);
-  if (matches.length > 0) {
-    const hints = matches.slice(0, 3).map(m => {
-      const remaining = Object.entries(m.remaining);
-      if (remaining.length === 0) return `${m.compound.formula}`;
-      const needed = remaining.map(([s, c]) => `${s}${c > 1 ? '×' + c : ''}`).join('+');
-      return `${m.compound.formula}(+${needed})`;
-    });
-    hintEl.innerHTML = `<b>${currentFormula}</b> → ${hints.join(' | ')}`;
-  } else {
-    hintEl.innerHTML = `<span style="color:#FF3B30"><b>${currentFormula}</b> - 가능한 화합물 없음</span>`;
-  }
+  hintEl.innerHTML = `<b>${currentFormula}</b>`;
 }
 
 function updateCompoundList() {
